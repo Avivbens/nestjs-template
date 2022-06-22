@@ -1,0 +1,1 @@
+export const WHITELIST_HTTP_CODES = [429, 500, 501, 502, 503]
