@@ -17,7 +17,7 @@ export class UsersService {
     }
 
     onModuleInit() {
-        this.col.createIndexes(USER_INDEXES)
+        // this.col.createIndexes(USER_INDEXES)
         this.logger.debug('Successfully set indexes')
     }
 
@@ -79,14 +79,7 @@ export class UsersService {
      * @param user - user object
      * @returns - user object without hashed password
      */
-    public async addUser({
-        email,
-        password,
-        username,
-        phoneNumber,
-        companyId,
-        isAdmin,
-    }: Partial<NewUser>) {
+    public async addUser({ email, password, username, phoneNumber, companyId, isAdmin }: Partial<NewUser>) {
         const isExists: boolean = !!(await this.getByEmail(email))
 
         if (isExists) {
@@ -104,14 +97,12 @@ export class UsersService {
             isAdmin,
             createdAt: new Date(),
         }
-        return this.col
-            .insertOne(userToAdd, { ignoreUndefined: true })
-            .then((o) =>
-                this.getById(o.insertedId.toString()).then((u) => {
-                    const { password, ...rest } = u
-                    return rest
-                }),
-            )
+        return this.col.insertOne(userToAdd, { ignoreUndefined: true }).then((o) =>
+            this.getById(o.insertedId.toString()).then((u) => {
+                const { password, ...rest } = u
+                return rest
+            }),
+        )
     }
 
     /**
@@ -155,19 +146,13 @@ export class UsersService {
      * @param userToUpdate - user object
      * @param userId - user id
      */
-    private async _protectUniqueEmail(
-        userToUpdate: UserAdminEdit | UserEdit,
-        userId: string,
-    ) {
+    private async _protectUniqueEmail(userToUpdate: UserAdminEdit | UserEdit, userId: string) {
         if (userToUpdate?.email) {
             const existsUser: User = await this.getByEmail(userToUpdate.email)
-            const isRunOver: boolean =
-                !!existsUser && existsUser?._id.toString() !== userId
+            const isRunOver: boolean = !!existsUser && existsUser?._id.toString() !== userId
 
             if (isRunOver) {
-                throw new BadRequestException(
-                    'User with this email already exists',
-                )
+                throw new BadRequestException('User with this email already exists')
             }
         }
     }
